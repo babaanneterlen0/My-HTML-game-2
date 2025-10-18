@@ -1,0 +1,1424 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ULTIMATE METEOR 2</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            margin: 0;
+            padding: 0;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        body {
+            background: #000;
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
+            touch-action: none;
+            height: 100vh;
+            width: 100vw;
+            position: fixed;
+        }
+
+        #gameCanvas {
+            display: block;
+            background: #000;
+            margin: 0 auto;
+            touch-action: none;
+        }
+
+        #menu {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: radial-gradient(ellipse at center, rgba(0,20,80,0.9) 0%, rgba(0,0,0,0.95) 100%);
+            z-index: 100;
+            color: white;
+            text-align: center;
+            touch-action: pan-y;
+        }
+
+        .menu-title {
+            font-size: 3.5rem;
+            margin-bottom: 2rem;
+            color: #00ffff;
+            text-shadow: 0 0 25px #0088ff, 0 0 35px #0088ff, 0 0 45px #0088ff;
+            background: linear-gradient(45deg, #00ffff, #0088ff, #00ffff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: bold;
+            letter-spacing: 2px;
+            padding: 0 1rem;
+        }
+
+        .btn {
+            background: linear-gradient(to bottom, #00ffff, #0088ff);
+            color: black;
+            border: none;
+            padding: 1rem 2rem;
+            margin: 0.8rem;
+            border-radius: 50px;
+            font-size: 1.2rem;
+            min-width: 220px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+            touch-action: manipulation;
+        }
+
+        .btn:active {
+            transform: scale(0.95);
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.8);
+        }
+
+        #controls {
+            position: absolute;
+            bottom: 2rem;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            touch-action: manipulation;
+            z-index: 60;
+        }
+
+        .control-btn {
+            background: rgba(0, 255, 255, 0.3);
+            color: white;
+            border: none;
+            width: 5rem;
+            height: 5rem;
+            border-radius: 50%;
+            font-size: 1.8rem;
+            cursor: pointer;
+            transition: all 0.1s;
+            border: 2px solid rgba(0, 255, 255, 0.6);
+            touch-action: manipulation;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        .control-btn:active {
+            transform: scale(0.85);
+            background: rgba(0, 255, 255, 0.6);
+        }
+
+        #shootBtn {
+            background: rgba(255, 0, 100, 0.4);
+            border-color: rgba(255, 0, 100, 0.8);
+        }
+
+        #pauseBtn {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(0, 255, 255, 0.7);
+            color: black;
+            border: none;
+            width: 3.5rem;
+            height: 3.5rem;
+            border-radius: 50%;
+            font-size: 1.3rem;
+            z-index: 50;
+            display: none;
+            font-weight: bold;
+            cursor: pointer;
+            touch-action: manipulation;
+        }
+
+        #gameInfo {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+            color: white;
+            font-size: 1.3rem;
+            z-index: 50;
+        }
+
+        #lives, #scoreDisplay, #goldDisplay, #powerDisplay {
+            background: rgba(0, 0, 0, 0.6);
+            padding: 0.8rem 1.2rem;
+            border-radius: 15px;
+            border: 2px solid #00ffff;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+        }
+
+        .mode-btn {
+            background: rgba(0, 255, 255, 0.1);
+            border: 2px solid #00ffff;
+            color: #00ffff;
+            padding: 0.8rem 1.2rem;
+            margin: 0.3rem;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+            min-width: 100px;
+            touch-action: manipulation;
+        }
+
+        .mode-btn.active {
+            background: #00ffff;
+            color: black;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.7);
+            font-weight: bold;
+        }
+
+        .mode-btn:active {
+            transform: scale(0.95);
+        }
+
+        #mode-container {
+            display: flex;
+            margin: 1rem 0;
+            flex-wrap: wrap;
+            justify-content: center;
+            max-width: 90%;
+            gap: 0.5rem;
+        }
+
+        #language-btn {
+            background: transparent;
+            border: 2px solid #00ffff;
+            color: #00ffff;
+            margin-top: 1rem;
+        }
+
+        /* MODE SELECTION */
+        .mode-btn.easy {
+            border-color: #00ff00;
+            color: #00ff00;
+        }
+        .mode-btn.easy.active {
+            background: #00ff00;
+            color: black;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.7);
+        }
+
+        .mode-btn.normal {
+            border-color: #ffff00;
+            color: #ffff00;
+        }
+        .mode-btn.normal.active {
+            background: #ffff00;
+            color: black;
+            box-shadow: 0 0 20px rgba(255, 255, 0, 0.7);
+        }
+
+        .mode-btn.hard {
+            border-color: #ffaa00;
+            color: #ffaa00;
+        }
+        .mode-btn.hard.active {
+            background: #ffaa00;
+            color: black;
+            box-shadow: 0 0 20px rgba(255, 170, 0, 0.7);
+        }
+
+        .mode-btn.extreme {
+            border-color: #ff4444;
+            color: #ff4444;
+        }
+        .mode-btn.extreme.active {
+            background: #ff4444;
+            color: black;
+            box-shadow: 0 0 20px rgba(255, 68, 68, 0.7);
+        }
+
+        .mode-btn.impossible {
+            border-color: #ff00ff;
+            color: #ff00ff;
+        }
+        .mode-btn.impossible.active {
+            background: #ff00ff;
+            color: black;
+            box-shadow: 0 0 20px rgba(255, 0, 255, 0.7);
+        }
+
+        /* SHOP STYLES */
+        #shopMenu {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            z-index: 200;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            color: white;
+            overflow-y: auto;
+            padding: 1rem;
+            touch-action: pan-y;
+        }
+
+        .shop-header {
+            position: sticky;
+            top: 0;
+            background: rgba(0,0,0,0.9);
+            width: 100%;
+            padding: 1rem;
+            text-align: center;
+            border-bottom: 2px solid #00ffff;
+            z-index: 201;
+        }
+
+        .shop-content {
+            width: 100%;
+            max-width: 500px;
+            padding: 1rem;
+        }
+
+        .shop-item {
+            background: rgba(0,255,255,0.1);
+            border: 2px solid #00ffff;
+            border-radius: 15px;
+            padding: 1rem;
+            margin: 0.5rem 0;
+            width: 100%;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            touch-action: manipulation;
+        }
+
+        .shop-item:active {
+            transform: scale(0.95);
+            background: rgba(0,255,255,0.2);
+        }
+
+        .shop-item.unlocked {
+            border-color: #00ff00;
+            background: rgba(0,255,0,0.1);
+        }
+
+        .price-tag {
+            color: #00ffff;
+            font-weight: bold;
+            margin: 0.5rem 0;
+        }
+
+        .back-btn {
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            background: rgba(255,0,0,0.7);
+            color: white;
+            border: none;
+            width: 3rem;
+            height: 3rem;
+            border-radius: 50%;
+            font-size: 1.2rem;
+            z-index: 202;
+            cursor: pointer;
+            touch-action: manipulation;
+        }
+
+        .shop-buttons {
+            position: sticky;
+            bottom: 0;
+            background: rgba(0,0,0,0.9);
+            width: 100%;
+            padding: 1rem;
+            text-align: center;
+            border-top: 2px solid #00ffff;
+        }
+
+        #menuGoldDisplay {
+            background: rgba(0,255,255,0.2);
+            border: 2px solid #00ffff;
+            border-radius: 20px;
+            padding: 0.8rem 1.5rem;
+            margin: 1rem;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #00ffff;
+        }
+
+        .mode-description {
+            font-size: 0.8rem;
+            opacity: 0.8;
+            margin-top: 0.3rem;
+        }
+
+        /* TOUCH FIXES */
+        .no-touch {
+            -webkit-touch-callout: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+    
+    <button id="pauseBtn">⏸</button>
+    
+    <div id="gameInfo">
+        <div id="lives">❤️❤️❤️</div>
+        <div id="scoreDisplay">⭐ Skor: 0</div>
+        <div id="goldDisplay">💰 Altın: 0</div>
+        <div id="powerDisplay">⚡ Güçler: </div>
+    </div>
+    
+    <div id="menu">
+        <h1 class="menu-title">🚀 ULTIMATE METEOR 2</h1>
+        
+        <!-- TÜM OYUN MODLARI -->
+        <div id="mode-container">
+            <button class="mode-btn easy active" id="easyMode">KOLAY</button>
+            <button class="mode-btn normal" id="normalMode">NORMAL</button>
+            <button class="mode-btn hard" id="hardMode">ZOR</button>
+            <button class="mode-btn extreme" id="extremeMode">EKSTREM</button>
+            <button class="mode-btn impossible" id="impossibleMode">İMKANSIZ</button>
+        </div>
+        
+        <div id="modeDescription" style="color: #00ffff; margin: 0.5rem 0; font-size: 0.9rem; max-width: 80%; text-align: center;">
+            Kolay: Yeni başlayanlar için ideal
+        </div>
+        
+        <!-- ANA MENÜDE ALTIN -->
+        <div id="menuGoldDisplay">💰 Altın: 0</div>
+        
+        <button class="btn" id="startBtn">🚀 OYUNU BAŞLAT</button>
+        <button class="btn" id="shopBtn">🛒 GALAKTİK MAĞAZA</button>
+        <button class="btn" id="language-btn">🌐 DİL: TÜRKÇE</button>
+        <button class="btn" id="resetBtn" style="background: linear-gradient(to bottom, #ff4444, #cc0000);">🗑️ VERİYİ SIFIRLA</button>
+    </div>
+
+    <!-- MAĞAZA MENÜSÜ -->
+    <div id="shopMenu">
+        <button class="back-btn" id="shopBackBtn">←</button>
+        
+        <div class="shop-header">
+            <h2>🚀 GALAKTİK MAĞAZA 🌟</h2>
+            <div id="goldDisplayShop">Altın: 0</div>
+        </div>
+        
+        <div class="shop-content">
+            <div id="shopItems">
+                <!-- Shop items will be generated here -->
+            </div>
+        </div>
+        
+        <div class="shop-buttons">
+            <button class="btn" id="backToMenuBtn" style="background: linear-gradient(to bottom, #ff4444, #cc0000);">MENÜYE DÖN</button>
+        </div>
+    </div>
+
+    <div id="controls">
+        <button class="control-btn" id="leftBtn">←</button>
+        <button class="control-btn" id="shootBtn">🔴</button>
+        <button class="control-btn" id="rightBtn">→</button>
+    </div>
+
+    <script>
+        // ULTIMATE METEOR 2 - YÜKSELTMESİZ SADE VERSİYON
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const menu = document.getElementById('menu');
+        const shopMenu = document.getElementById('shopMenu');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const livesDisplay = document.getElementById('lives');
+        const scoreDisplay = document.getElementById('scoreDisplay');
+        const goldDisplay = document.getElementById('goldDisplay');
+        const powerDisplay = document.getElementById('powerDisplay');
+        const menuGoldDisplay = document.getElementById('menuGoldDisplay');
+        const goldDisplayShop = document.getElementById('goldDisplayShop');
+        const modeDescription = document.getElementById('modeDescription');
+        
+        // Canvas boyutunu ayarla
+        function resizeCanvas() {
+            const size = Math.min(window.innerWidth, window.innerHeight);
+            canvas.width = size * 0.95;
+            canvas.height = size * 1.3;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+        
+        // Oyun durumu
+        let gameActive = false;
+        let gamePaused = false;
+        let lives = 3;
+        let score = 0;
+        let gold = 0;
+        let language = 'Turkish';
+        let gameMode = 'Easy';
+        let meteorsDestroyed = 0;
+        let bossActive = false;
+        let bossHealth = 0;
+        let bossMaxHealth = 0;
+
+        // MAĞAZA SİSTEMİ - SADECE SKİNLER
+        let shipSkins = {
+            default: { color: '#00ffff', name: 'Mavi Savaşçı', unlocked: true },
+            premium: { color: '#FFD700', name: 'Altın Savaşçı', price: 35, unlocked: false },
+            fire: { color: '#FF4500', name: 'Ateş Topu', price: 35, unlocked: false },
+            ice: { color: '#00FFFF', name: 'Buz Koruyucu', price: 35, unlocked: false },
+            neon: { color: '#FF00FF', name: 'Neon Hayalet', price: 35, unlocked: false }
+        };
+
+        let meteorSkins = {
+            default: { color: '#ff4444', name: 'Kırmızı Meteor', unlocked: true },
+            gold: { color: '#FFD700', name: 'Altın Meteor', price: 25, unlocked: false },
+            crystal: { color: '#87CEEB', name: 'Kristal Meteor', price: 25, unlocked: false },
+            lava: { color: '#FF8C00', name: 'Lav Meteor', price: 25, unlocked: false },
+            cosmic: { color: '#9370DB', name: 'Kozmik Meteor', price: 25, unlocked: false }
+        };
+
+        let currentShipSkin = 'default';
+        let currentMeteorSkin = 'default';
+
+        // GÜÇ YÜKSELTMELERİ - SADECE GEÇİCİ GÜÇLER
+        let powerUps = {
+            shield: { active: false, duration: 0, maxDuration: 600 },
+            rapidFire: { active: false, duration: 0, maxDuration: 450 },
+            tripleShot: { active: false, duration: 0, maxDuration: 300 },
+            bomb: { active: false, duration: 0, maxDuration: 180 },
+            laser: { active: false, duration: 0, maxDuration: 240 }
+        };
+
+        let activePowerUps = [];
+        let powerUpItems = [];
+
+        // Dil metinleri
+        const texts = {
+            English: {
+                start: '🚀 START GAME',
+                easy: 'EASY',
+                normal: 'NORMAL', 
+                hard: 'HARD',
+                extreme: 'EXTREME',
+                impossible: 'IMPOSSIBLE',
+                language: '🌐 LANGUAGE: ENGLISH',
+                lives: 'Lives: ',
+                score: 'Score: ',
+                gold: 'Gold: ',
+                pause: 'PAUSED',
+                powers: 'Powers: ',
+                boss: 'BOSS INCOMING!',
+                modeDescriptions: {
+                    easy: 'Easy: Perfect for beginners',
+                    normal: 'Normal: Balanced challenge',
+                    hard: 'Hard: For experienced players', 
+                    extreme: 'Extreme: Only for experts',
+                    impossible: 'Impossible: Are you crazy?'
+                }
+            },
+            Turkish: {
+                start: '🚀 OYUNU BAŞLAT',
+                easy: 'KOLAY',
+                normal: 'NORMAL',
+                hard: 'ZOR', 
+                extreme: 'EKSTREM',
+                impossible: 'İMKANSIZ',
+                language: '🌐 DİL: TÜRKÇE',
+                lives: 'Can: ',
+                score: 'Skor: ',
+                gold: 'Altın: ',
+                pause: 'DURAKLATILDI',
+                powers: 'Güçler: ',
+                boss: 'BOSS GELİYOR!',
+                modeDescriptions: {
+                    easy: 'Kolay: Yeni başlayanlar için ideal',
+                    normal: 'Normal: Dengeli zorluk',
+                    hard: 'Zor: Tecrübeli oyuncular için',
+                    extreme: 'Ekstrem: Sadece uzmanlar için',
+                    impossible: 'İmkansız: Deli misin?'
+                }
+            }
+        };
+
+        // Gemi ayarları
+        const ship = {
+            x: canvas.width / 2,
+            y: canvas.height - 80,
+            width: 45,
+            height: 30,
+            speed: 6,
+            health: 100,
+            maxHealth: 100,
+            color: '#00ffff',
+            moveLeft: false,
+            moveRight: false,
+            shield: false
+        };
+
+        // OYUN MODU AYARLARI - TÜM MODLARDA 3 CAN
+        const gameModeSettings = {
+            Easy: {
+                meteorSize: 20,
+                meteorSpeed: 2,
+                meteorHealth: 1,
+                spawnRate: 0.02,
+                powerUpRate: 0.01,
+                bossHealth: 200,
+                playerSpeed: 5,
+                lives: 3
+            },
+            Normal: {
+                meteorSize: 18,
+                meteorSpeed: 3,
+                meteorHealth: 1,
+                spawnRate: 0.025,
+                powerUpRate: 0.008,
+                bossHealth: 300,
+                playerSpeed: 6,
+                lives: 3
+            },
+            Hard: {
+                meteorSize: 16,
+                meteorSpeed: 4,
+                meteorHealth: 2,
+                spawnRate: 0.03,
+                powerUpRate: 0.006,
+                bossHealth: 400,
+                playerSpeed: 6,
+                lives: 3
+            },
+            Extreme: {
+                meteorSize: 15,
+                meteorSpeed: 5,
+                meteorHealth: 2,
+                spawnRate: 0.035,
+                powerUpRate: 0.005,
+                bossHealth: 500,
+                playerSpeed: 7,
+                lives: 3
+            },
+            Impossible: {
+                meteorSize: 12,
+                meteorSpeed: 7,
+                meteorHealth: 3,
+                spawnRate: 0.05,
+                powerUpRate: 0.003,
+                bossHealth: 800,
+                playerSpeed: 8,
+                lives: 3
+            }
+        };
+
+        // Oyun nesneleri
+        let meteors = [];
+        let bullets = [];
+        let boss = null;
+
+        // DOKUNMATİK KONTROLLER
+        function setupTouchControls() {
+            const leftBtn = document.getElementById('leftBtn');
+            const rightBtn = document.getElementById('rightBtn');
+            const shootBtn = document.getElementById('shootBtn');
+
+            // Sol buton için touch events
+            leftBtn.addEventListener('touchstart', function(e) {
+                e.preventDefault();
+                ship.moveLeft = true;
+                ship.moveRight = false;
+            });
+
+            leftBtn.addEventListener('touchend', function(e) {
+                e.preventDefault();
+                ship.moveLeft = false;
+            });
+
+            // Sağ buton için touch events
+            rightBtn.addEventListener('touchstart', function(e) {
+                e.preventDefault();
+                ship.moveRight = true;
+                ship.moveLeft = false;
+            });
+
+            rightBtn.addEventListener('touchend', function(e) {
+                e.preventDefault();
+                ship.moveRight = false;
+            });
+
+            // Ateş butonu için touch events
+            shootBtn.addEventListener('touchstart', function(e) {
+                e.preventDefault();
+                if (gameActive && !gamePaused) {
+                    shoot();
+                }
+            });
+
+            // Mouse events (fallback)
+            leftBtn.addEventListener('mousedown', function(e) {
+                e.preventDefault();
+                ship.moveLeft = true;
+                ship.moveRight = false;
+            });
+
+            leftBtn.addEventListener('mouseup', function(e) {
+                e.preventDefault();
+                ship.moveLeft = false;
+            });
+
+            leftBtn.addEventListener('mouseleave', function(e) {
+                e.preventDefault();
+                ship.moveLeft = false;
+            });
+
+            rightBtn.addEventListener('mousedown', function(e) {
+                e.preventDefault();
+                ship.moveRight = true;
+                ship.moveLeft = false;
+            });
+
+            rightBtn.addEventListener('mouseup', function(e) {
+                e.preventDefault();
+                ship.moveRight = false;
+            });
+
+            rightBtn.addEventListener('mouseleave', function(e) {
+                e.preventDefault();
+                ship.moveRight = false;
+            });
+
+            shootBtn.addEventListener('mousedown', function(e) {
+                e.preventDefault();
+                if (gameActive && !gamePaused) {
+                    shoot();
+                }
+            });
+        }
+
+        function createMeteor() {
+            const settings = gameModeSettings[gameMode];
+            return {
+                x: Math.random() * canvas.width,
+                y: -30,
+                size: settings.meteorSize,
+                speed: settings.meteorSpeed,
+                health: settings.meteorHealth,
+                color: getRandomMeteorColor()
+            };
+        }
+
+        function getRandomMeteorColor() {
+            const colors = ['#ff4444', '#ffaa00', '#ffff00', '#ff00ff', '#00ff00'];
+            return colors[Math.floor(Math.random() * colors.length)];
+        }
+
+        function createBoss() {
+            const settings = gameModeSettings[gameMode];
+            bossActive = true;
+            bossMaxHealth = settings.bossHealth;
+            bossHealth = bossMaxHealth;
+            
+            return {
+                x: canvas.width / 2,
+                y: 100,
+                width: 120,
+                height: 80,
+                speed: 1,
+                color: '#ff0000',
+                attackPattern: 0,
+                lastAttack: 0
+            };
+        }
+
+        function createPowerUp() {
+            const settings = gameModeSettings[gameMode];
+            const powerTypes = ['shield', 'rapidFire', 'tripleShot', 'bomb', 'laser'];
+            const type = powerTypes[Math.floor(Math.random() * powerTypes.length)];
+            
+            return {
+                x: Math.random() * (canvas.width - 30),
+                y: -20,
+                width: 25,
+                height: 25,
+                type: type,
+                color: getPowerUpColor(type),
+                speed: 2
+            };
+        }
+
+        function getPowerUpColor(type) {
+            const colors = {
+                shield: '#00ffff',
+                rapidFire: '#ffff00',
+                tripleShot: '#ff00ff',
+                bomb: '#ff4444',
+                laser: '#00ff00'
+            };
+            return colors[type];
+        }
+
+        function shoot() {
+            const baseDamage = 10; // SABİT HASAR
+            
+            if (powerUps.tripleShot.active) {
+                // ÜÇLÜ ATEŞ
+                bullets.push({x: ship.x - 15, y: ship.y - 40, vx: 0, vy: -12, color: '#ff00ff', damage: baseDamage * 2});
+                bullets.push({x: ship.x, y: ship.y - 40, vx: 0, vy: -12, color: '#ff00ff', damage: baseDamage * 2});
+                bullets.push({x: ship.x + 15, y: ship.y - 40, vx: 0, vy: -12, color: '#ff00ff', damage: baseDamage * 2});
+            } else if (powerUps.laser.active) {
+                // LAZER
+                bullets.push({x: ship.x, y: ship.y - 40, vx: 0, vy: -18, color: '#00ff00', width: 8, height: 25, damage: baseDamage * 3});
+            } else {
+                // NORMAL ATEŞ
+                const bulletSpeed = powerUps.rapidFire.active ? -14 : -10;
+                bullets.push({x: ship.x, y: ship.y - 40, vx: 0, vy: bulletSpeed, color: '#ffff00', width: 5, height: 15, damage: baseDamage});
+            }
+        }
+
+        // Çizim fonksiyonları
+        function drawShip() {
+            ctx.fillStyle = ship.color;
+            ctx.beginPath();
+            ctx.moveTo(ship.x, ship.y - ship.height);
+            ctx.lineTo(ship.x - ship.width/2, ship.y);
+            ctx.lineTo(ship.x + ship.width/2, ship.y);
+            ctx.closePath();
+            ctx.fill();
+
+            if (powerUps.rapidFire.active) {
+                ctx.fillStyle = '#ffff00';
+                ctx.beginPath();
+                ctx.moveTo(ship.x - 10, ship.y);
+                ctx.lineTo(ship.x, ship.y + 15);
+                ctx.lineTo(ship.x + 10, ship.y);
+                ctx.closePath();
+                ctx.fill();
+            }
+
+            if (ship.shield) {
+                ctx.strokeStyle = '#00ffff';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.arc(ship.x, ship.y - ship.height/2, ship.width, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+        }
+
+        function drawMeteors() {
+            meteors.forEach(meteor => {
+                ctx.fillStyle = meteor.color;
+                ctx.beginPath();
+                ctx.arc(meteor.x, meteor.y, meteor.size, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath();
+                ctx.arc(meteor.x - meteor.size/3, meteor.y - meteor.size/3, meteor.size/4, 0, Math.PI * 2);
+                ctx.fill();
+            });
+        }
+
+        function drawBoss() {
+            if (!bossActive) return;
+
+            ctx.fillStyle = boss.color;
+            ctx.fillRect(boss.x - boss.width/2, boss.y - boss.height/2, boss.width, boss.height);
+
+            ctx.fillStyle = '#ffaaaa';
+            ctx.fillRect(boss.x - boss.width/3, boss.y - boss.height/4, boss.width/1.5, boss.height/3);
+
+            const healthPercent = bossHealth / bossMaxHealth;
+            ctx.fillStyle = '#333333';
+            ctx.fillRect(canvas.width/2 - 100, 20, 200, 15);
+            ctx.fillStyle = healthPercent > 0.6 ? '#00ff00' : healthPercent > 0.3 ? '#ffff00' : '#ff0000';
+            ctx.fillRect(canvas.width/2 - 100, 20, 200 * healthPercent, 15);
+
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '16px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(texts[language].boss, canvas.width/2, 15);
+            ctx.textAlign = 'left';
+        }
+
+        function drawPowerUps() {
+            powerUpItems.forEach(powerUp => {
+                ctx.fillStyle = powerUp.color;
+                ctx.fillRect(powerUp.x, powerUp.y, powerUp.width, powerUp.height);
+                
+                ctx.fillStyle = '#ffffff';
+                ctx.font = '12px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(getPowerUpSymbol(powerUp.type), powerUp.x + powerUp.width/2, powerUp.y + powerUp.height/2 + 4);
+                ctx.textAlign = 'left';
+            });
+        }
+
+        function getPowerUpSymbol(type) {
+            const symbols = {
+                shield: '🛡️',
+                rapidFire: '⚡',
+                tripleShot: '🔺',
+                bomb: '💣',
+                laser: '📡'
+            };
+            return symbols[type];
+        }
+
+        function drawBullets() {
+            bullets.forEach(bullet => {
+                ctx.fillStyle = bullet.color;
+                if (bullet.width && bullet.height) {
+                    ctx.fillRect(bullet.x - bullet.width/2, bullet.y, bullet.width, bullet.height);
+                } else {
+                    ctx.beginPath();
+                    ctx.arc(bullet.x, bullet.y, 3, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            });
+        }
+
+        function drawLives() {
+            const lang = texts[language];
+            livesDisplay.textContent = lang.lives + '❤️'.repeat(lives);
+        }
+
+        function drawScore() {
+            const lang = texts[language];
+            scoreDisplay.textContent = lang.score + score;
+        }
+
+        function drawGold() {
+            const lang = texts[language];
+            const goldText = lang.gold + gold;
+            goldDisplay.textContent = goldText;
+            menuGoldDisplay.textContent = goldText;
+            goldDisplayShop.textContent = goldText;
+        }
+
+        function drawPowerDisplay() {
+            const lang = texts[language];
+            let powerText = lang.powers;
+            
+            activePowerUps.forEach(power => {
+                powerText += getPowerUpSymbol(power) + ' ';
+            });
+            
+            powerDisplay.textContent = powerText;
+        }
+
+        // KAYDETME SİSTEMİ
+        function saveGameData() {
+            const gameData = {
+                gold: gold,
+                currentShipSkin: currentShipSkin,
+                currentMeteorSkin: currentMeteorSkin,
+                shipSkins: {},
+                meteorSkins: {},
+                language: language,
+                gameMode: gameMode
+            };
+
+            Object.keys(shipSkins).forEach(key => {
+                gameData.shipSkins[key] = {
+                    unlocked: shipSkins[key].unlocked
+                };
+            });
+
+            Object.keys(meteorSkins).forEach(key => {
+                gameData.meteorSkins[key] = {
+                    unlocked: meteorSkins[key].unlocked
+                };
+            });
+
+            localStorage.setItem('ultimateMeteor2Data', JSON.stringify(gameData));
+        }
+
+        function loadGameData() {
+            const savedData = localStorage.getItem('ultimateMeteor2Data');
+            if (savedData) {
+                try {
+                    const gameData = JSON.parse(savedData);
+                    
+                    gold = gameData.gold || 0;
+                    currentShipSkin = gameData.currentShipSkin || 'default';
+                    currentMeteorSkin = gameData.currentMeteorSkin || 'default';
+                    language = gameData.language || 'Turkish';
+                    gameMode = gameData.gameMode || 'Easy';
+                    
+                    if (gameData.shipSkins) {
+                        Object.keys(gameData.shipSkins).forEach(key => {
+                            if (shipSkins[key]) {
+                                shipSkins[key].unlocked = gameData.shipSkins[key].unlocked || false;
+                            }
+                        });
+                    }
+                    
+                    if (gameData.meteorSkins) {
+                        Object.keys(gameData.meteorSkins).forEach(key => {
+                            if (meteorSkins[key]) {
+                                meteorSkins[key].unlocked = gameData.meteorSkins[key].unlocked || false;
+                            }
+                        });
+                    }
+                    
+                    ship.color = shipSkins[currentShipSkin].color;
+                    
+                } catch (error) {
+                    console.error('Oyun verisi yüklenirken hata:', error);
+                }
+            }
+        }
+
+        function resetGameData() {
+            if (confirm('Tüm veriler silinecek! Emin misin?')) {
+                localStorage.removeItem('ultimateMeteor2Data');
+                
+                gold = 0;
+                currentShipSkin = 'default';
+                currentMeteorSkin = 'default';
+                language = 'Turkish';
+                gameMode = 'Easy';
+                
+                Object.keys(shipSkins).forEach(key => {
+                    if (key !== 'default') {
+                        shipSkins[key].unlocked = false;
+                    }
+                });
+                
+                Object.keys(meteorSkins).forEach(key => {
+                    if (key !== 'default') {
+                        meteorSkins[key].unlocked = false;
+                    }
+                });
+                
+                ship.color = shipSkins.default.color;
+                
+                drawGold();
+                updateUI();
+                setupShop();
+                
+                alert('Tüm veriler sıfırlandı!');
+            }
+        }
+
+        // MAĞAZA SİSTEMİ
+        function setupShop() {
+            const shopItems = document.getElementById('shopItems');
+            shopItems.innerHTML = '';
+
+            const shipHeader = document.createElement('h3');
+            shipHeader.textContent = '🚀 UZAY GEMİSİ SKİNLERİ - 35 ALTIN';
+            shipHeader.style.color = '#00ffff';
+            shipHeader.style.textAlign = 'center';
+            shipHeader.style.marginBottom = '1rem';
+            shopItems.appendChild(shipHeader);
+
+            Object.keys(shipSkins).forEach(skinKey => {
+                if (skinKey === 'default') return;
+                
+                const skin = shipSkins[skinKey];
+                const item = document.createElement('div');
+                item.className = `shop-item ${skin.unlocked ? 'unlocked' : 'locked'}`;
+                
+                item.innerHTML = `
+                    <h3>${skin.name}</h3>
+                    <div style="color: ${skin.color}; font-size: 2rem;">▲</div>
+                    ${!skin.unlocked ? `<div class="price-tag">Fiyat: ${skin.price} 💰</div>` : ''}
+                    <button onclick="buyItem('ship', '${skinKey}')" ${skin.unlocked ? 'disabled' : ''} style="
+                        background: ${skin.unlocked ? '#00ff00' : '#00ffff'};
+                        color: black;
+                        border: none;
+                        padding: 0.5rem 1rem;
+                        border-radius: 10px;
+                        cursor: ${skin.unlocked ? 'default' : 'pointer'};
+                        font-weight: bold;
+                    ">
+                        ${skin.unlocked ? '✅ SAHİP' : '🛒 SATIN AL'}
+                    </button>
+                `;
+                shopItems.appendChild(item);
+            });
+
+            const meteorHeader = document.createElement('h3');
+            meteorHeader.textContent = '☄️ METEOR SKİNLERİ - 25 ALTIN';
+            meteorHeader.style.color = '#00ffff';
+            meteorHeader.style.textAlign = 'center';
+            meteorHeader.style.marginTop = '2rem';
+            meteorHeader.style.marginBottom = '1rem';
+            shopItems.appendChild(meteorHeader);
+
+            Object.keys(meteorSkins).forEach(skinKey => {
+                if (skinKey === 'default') return;
+                
+                const skin = meteorSkins[skinKey];
+                const item = document.createElement('div');
+                item.className = `shop-item ${skin.unlocked ? 'unlocked' : 'locked'}`;
+                
+                item.innerHTML = `
+                    <h3>${skin.name}</h3>
+                    <div style="color: ${skin.color}; font-size: 2rem;">●</div>
+                    ${!skin.unlocked ? `<div class="price-tag">Fiyat: ${skin.price} 💰</div>` : ''}
+                    <button onclick="buyItem('meteor', '${skinKey}')" ${skin.unlocked ? 'disabled' : ''} style="
+                        background: ${skin.unlocked ? '#00ff00' : '#00ffff'};
+                        color: black;
+                        border: none;
+                        padding: 0.5rem 1rem;
+                        border-radius: 10px;
+                        cursor: ${skin.unlocked ? 'default' : 'pointer'};
+                        font-weight: bold;
+                    ">
+                        ${skin.unlocked ? '✅ SAHİP' : '🛒 SATIN AL'}
+                    </button>
+                `;
+                shopItems.appendChild(item);
+            });
+        }
+
+        function buyItem(type, itemKey) {
+            const items = type === 'ship' ? shipSkins : meteorSkins;
+            const item = items[itemKey];
+            
+            if (gold >= item.price && !item.unlocked) {
+                gold -= item.price;
+                item.unlocked = true;
+                
+                if (type === 'ship') {
+                    currentShipSkin = itemKey;
+                    ship.color = item.color;
+                } else {
+                    currentMeteorSkin = itemKey;
+                }
+                
+                drawGold();
+                setupShop();
+                saveGameData();
+                showPurchaseSuccess(item.name);
+            }
+        }
+
+        function showPurchaseSuccess(message) {
+            alert(`✅ ${message} başarıyla satın alındı!`);
+        }
+
+        // Oyun mantığı
+        function updateGame() {
+            if (gamePaused) return;
+            
+            // Gemi hareketi
+            if (ship.moveLeft && ship.x - ship.width/2 > 0) {
+                ship.x -= ship.speed;
+            }
+            if (ship.moveRight && ship.x + ship.width/2 < canvas.width) {
+                ship.x += ship.speed;
+            }
+            
+            // Meteor hareketi ve çarpışma
+            meteors.forEach((meteor, index) => {
+                meteor.y += meteor.speed;
+                
+                if (Math.abs(meteor.x - ship.x) < meteor.size + ship.width/2 && 
+                    Math.abs(meteor.y - ship.y) < meteor.size + ship.height/2) {
+                    
+                    if (ship.shield) {
+                        ship.shield = false;
+                    } else {
+                        lives--;
+                        drawLives();
+                        if (lives <= 0) {
+                            endGame();
+                        }
+                    }
+                    meteors.splice(index, 1);
+                }
+                
+                bullets.forEach((bullet, bIndex) => {
+                    if (Math.abs(meteor.x - bullet.x) < meteor.size + 3 && 
+                        Math.abs(meteor.y - bullet.y) < meteor.size + 8) {
+                        
+                        meteor.health -= bullet.damage || 10;
+                        bullets.splice(bIndex, 1);
+                        
+                        if (meteor.health <= 0) {
+                            meteors.splice(index, 1);
+                            score += 10;
+                            meteorsDestroyed++;
+                            gold += 2;
+                            drawScore();
+                            drawGold();
+                            saveGameData();
+                            
+                            if (meteorsDestroyed % 15 === 0 && !bossActive) {
+                                boss = createBoss();
+                            }
+                        }
+                    }
+                });
+            });
+            
+            if (bossActive) {
+                boss.x += Math.sin(Date.now() / 1000) * boss.speed;
+                
+                if (Date.now() - boss.lastAttack > 2000) {
+                    boss.lastAttack = Date.now();
+                    bullets.push({x: boss.x, y: boss.y + 40, vx: 0, vy: 6, color: '#ff0000'});
+                }
+                
+                bullets.forEach((bullet, bIndex) => {
+                    if (bullet.vy < 0 && Math.abs(boss.x - bullet.x) < boss.width/2 && 
+                        Math.abs(boss.y - bullet.y) < boss.height/2) {
+                        
+                        bossHealth -= (bullet.damage || 10);
+                        bullets.splice(bIndex, 1);
+                        
+                        if (bossHealth <= 0) {
+                            bossActive = false;
+                            score += 500;
+                            gold += 50;
+                            drawScore();
+                            drawGold();
+                            saveGameData();
+                        }
+                    }
+                });
+            }
+            
+            powerUpItems.forEach((powerUp, index) => {
+                powerUp.y += powerUp.speed;
+                
+                if (Math.abs(powerUp.x - ship.x) < powerUp.width + ship.width/2 && 
+                    Math.abs(powerUp.y - ship.y) < powerUp.height + ship.height/2) {
+                    
+                    activatePowerUp(powerUp.type);
+                    powerUpItems.splice(index, 1);
+                }
+                
+                if (powerUp.y > canvas.height) {
+                    powerUpItems.splice(index, 1);
+                }
+            });
+            
+            updatePowerUpDurations();
+            
+            const settings = gameModeSettings[gameMode];
+            if (Math.random() < settings.spawnRate) {
+                meteors.push(createMeteor());
+            }
+            
+            if (Math.random() < settings.powerUpRate) {
+                powerUpItems.push(createPowerUp());
+            }
+            
+            bullets.forEach((bullet, index) => {
+                bullet.y += bullet.vy;
+                if (bullet.y < 0 || bullet.y > canvas.height) {
+                    bullets.splice(index, 1);
+                }
+            });
+        }
+
+        function activatePowerUp(type) {
+            powerUps[type].active = true;
+            powerUps[type].duration = powerUps[type].maxDuration;
+            
+            if (!activePowerUps.includes(type)) {
+                activePowerUps.push(type);
+            }
+            
+            if (type === 'shield') {
+                ship.shield = true;
+            }
+            
+            drawPowerDisplay();
+        }
+
+        function updatePowerUpDurations() {
+            activePowerUps.forEach((type, index) => {
+                powerUps[type].duration--;
+                
+                if (powerUps[type].duration <= 0) {
+                    powerUps[type].active = false;
+                    activePowerUps.splice(index, 1);
+                    
+                    if (type === 'shield') {
+                        ship.shield = false;
+                    }
+                }
+            });
+            drawPowerDisplay();
+        }
+
+        // OYUN MODU SEÇİMİ
+        function setupGameModes() {
+            const modes = ['easy', 'normal', 'hard', 'extreme', 'impossible'];
+            
+            modes.forEach(mode => {
+                document.getElementById(mode + 'Mode').addEventListener('click', function() {
+                    gameMode = mode.charAt(0).toUpperCase() + mode.slice(1);
+                    
+                    document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    updateModeDescription();
+                    
+                    saveGameData();
+                });
+            });
+        }
+
+        function updateModeDescription() {
+            const lang = texts[language];
+            modeDescription.textContent = lang.modeDescriptions[gameMode.toLowerCase()];
+        }
+
+        // Buton event listener'ları
+        document.getElementById('shopBtn').addEventListener('click', function() {
+            menu.style.display = 'none';
+            shopMenu.style.display = 'flex';
+            setupShop();
+        });
+
+        document.getElementById('backToMenuBtn').addEventListener('click', function() {
+            shopMenu.style.display = 'none';
+            menu.style.display = 'flex';
+        });
+
+        document.getElementById('shopBackBtn').addEventListener('click', function() {
+            shopMenu.style.display = 'none';
+            menu.style.display = 'flex';
+        });
+
+        document.getElementById('language-btn').addEventListener('click', function() {
+            language = language === 'English' ? 'Turkish' : 'English';
+            updateUI();
+            saveGameData();
+        });
+
+        document.getElementById('resetBtn').addEventListener('click', resetGameData);
+
+        // UI güncelleme
+        function updateUI() {
+            const lang = texts[language];
+            document.getElementById('startBtn').textContent = lang.start;
+            document.getElementById('easyMode').textContent = lang.easy;
+            document.getElementById('normalMode').textContent = lang.normal;
+            document.getElementById('hardMode').textContent = lang.hard;
+            document.getElementById('extremeMode').textContent = lang.extreme;
+            document.getElementById('impossibleMode').textContent = lang.impossible;
+            document.getElementById('language-btn').textContent = lang.language;
+            
+            updateModeDescription();
+            drawLives();
+            drawScore();
+            drawGold();
+            drawPowerDisplay();
+        }
+
+        // Oyun döngüsü
+        function gameLoop() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            drawSpaceBackground();
+            
+            if (gameActive) {
+                updateGame();
+                drawMeteors();
+                drawPowerUps();
+                drawBullets();
+                drawBoss();
+                drawShip();
+            }
+            
+            requestAnimationFrame(gameLoop);
+        }
+
+        function drawSpaceBackground() {
+            ctx.fillStyle = '#000011';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.fillStyle = '#ffffff';
+            for (let i = 0; i < 200; i++) {
+                const x = Math.random() * canvas.width;
+                const y = Math.random() * canvas.height;
+                const size = Math.random() * 2;
+                ctx.fillRect(x, y, size, size);
+            }
+            
+            ctx.fillStyle = 'rgba(0, 100, 255, 0.1)';
+            ctx.beginPath();
+            ctx.arc(canvas.width * 0.3, canvas.height * 0.2, 100, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.fillStyle = 'rgba(255, 100, 255, 0.1)';
+            ctx.beginPath();
+            ctx.arc(canvas.width * 0.7, canvas.height * 0.3, 80, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        function togglePause() {
+            if (!gameActive) return;
+            gamePaused = !gamePaused;
+            pauseBtn.textContent = gamePaused ? "▶" : "⏸";
+        }
+
+        function endGame() {
+            gameActive = false;
+            gamePaused = false;
+            menu.style.display = 'flex';
+            pauseBtn.style.display = 'none';
+            saveGameData();
+        }
+
+        // Oyun başlatma
+        document.getElementById('startBtn').addEventListener('click', () => {
+            gameActive = true;
+            gamePaused = false;
+            score = 0;
+            
+            // TÜM MODLARDA 3 CAN
+            lives = 3;
+            
+            meteorsDestroyed = 0;
+            bossActive = false;
+            meteors = [];
+            bullets = [];
+            powerUpItems = [];
+            activePowerUps = [];
+            
+            Object.keys(powerUps).forEach(key => {
+                powerUps[key].active = false;
+                powerUps[key].duration = 0;
+            });
+            
+            ship.shield = false;
+            menu.style.display = 'none';
+            pauseBtn.style.display = 'block';
+            pauseBtn.textContent = '⏸';
+            ship.x = canvas.width / 2;
+            
+            // Oyun modu ayarlarını uygula
+            const settings = gameModeSettings[gameMode];
+            ship.speed = settings.playerSpeed;
+            
+            updateUI();
+        });
+
+        pauseBtn.addEventListener('click', togglePause);
+
+        // Başlangıç
+        loadGameData();
+        setupTouchControls();
+        setupGameModes();
+        setupShop();
+        updateUI();
+        gameLoop();
+
+        // Global fonksiyonlar
+        window.buyItem = buyItem;
+    </script>
+</body>
+</html>
